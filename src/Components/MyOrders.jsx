@@ -7,6 +7,8 @@ import ModalInfo from './ModalInfo';
 import {ToastContainer, toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css';
 import orderlogo from '../assets/logo2.png';
+import ReactPaginate from 'react-paginate'
+
 const MyOrders = () => {
     const [allOrders, setAllOrders] = useState([]); 
      const [open, setOpen] = useState(false)
@@ -14,6 +16,13 @@ const MyOrders = () => {
      const handleOpen = () => setOpen(true);
      const handleClose = () => { setOpen(false)} 
      
+     //for pagination
+    const [pgNum, setPgNum] = useState(0)
+    const perPage = 2; 
+    const itemsRead = pgNum * perPage
+    const changePage = ({selected}) => {
+      setPgNum(selected)
+    }
      const getAllOrders = async() => {
         try {
           setmodalMsg("Getting your orders..")
@@ -47,7 +56,7 @@ const MyOrders = () => {
      height: '90dvh'}} >
          { 
           allOrders.length && 
-          allOrders.map(el => 
+          allOrders.slice(itemsRead, itemsRead + perPage).map(el => 
             <Grid item xs={12} sm={10} md={5} lg={5} xl={4} key={`wrap-${el.order_ID}`} component={Paper} 
             justifyContent={'start'} className='order-card'>
          
@@ -85,11 +94,28 @@ const MyOrders = () => {
              <p> {el.order_Status}</p>
              <p>Placed on: {el.order_created.substring(0,10) }</p> 
              <p>ETA Date: {el.order_ETA }</p> 
+             
           </Grid>
         
             )
          }
-        
+        <Grid item xs={12}>
+             <Box marginBottom={0}>
+                <ReactPaginate 
+                previousLabel={"Prev"}
+                nextLabel={"Next"}
+                pageCount={ Math.ceil(allOrders.length / perPage)}
+                pageRangeDisplayed={1}
+                marginPagesDisplayed={1}
+                onPageChange={changePage}
+                containerClassName={'paginationButtons'}
+                previousLinkClassName='previousBtn'
+                nextLinkClassName='nextBtn'
+                disabledClassName='paginationDisabled'
+                activeClassName='paginationActive'>
+              </ReactPaginate>
+              </Box> 
+              </Grid>
      </Grid>
 
       <ToastContainer />
