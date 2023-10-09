@@ -13,17 +13,25 @@ import { useDispatch, useSelector } from 'react-redux';
 import { allProducts } from '../Redux/Reducers/productsReducer.js';
 import { addItem, removeItem } from '../Redux/Reducers/cartReducer.js';
 import { useCTX } from '../Context.js';
+import ReactPaginate from 'react-paginate'
+
 function Home() {
     const {user} = useCTX();
-  const productsAll = useSelector( state => state.products.productsAll ) 
-   const navigate = useNavigate();
-   const [open, setOpen] = useState(false)
+    const productsAll = useSelector( state => state.products.productsAll ) 
+    const navigate = useNavigate();
+    const [open, setOpen] = useState(false)
     const [modalMsg, setmodalMsg] = useState("")
     const handleOpen = () => setOpen(true);
     const handleClose = () => { setOpen(false)} 
     const dispatch = useDispatch();
-   
-    
+
+    //for pagination
+    const [pgNum, setPgNum] = useState(0)
+    const perPage = 4; 
+    const itemsRead = pgNum * perPage
+    const changePage = ({selected}) => {
+      setPgNum(selected)
+  }
     const addItemHandler = (item) => { 
       if( !user.email) {
           toast.error("Login to buy", toastOptions)
@@ -89,7 +97,7 @@ function Home() {
       <div className='card-wrap'> 
          {
           productsAll.length && 
-          productsAll.map(el => 
+          productsAll.slice(itemsRead, itemsRead + perPage).map(el => 
             <Box className='prod-card' key={el.product_ID} component={Paper}>
             <img src={el.prod_pic_URL} alt={el.title} />
             <p className='prod-title'>{el.title}</p>
@@ -102,7 +110,7 @@ function Home() {
             
              <Box justifyContent={'center'} alignItems={'center'} gap={2} pb={'2rem'}> 
              { el.stock > 0 ?
-            <Button variant='contained' key={`add-${el.product_ID}`} color="success" sx={{m:1}} disabled={false} onClick={() => addItemHandler(el)} >Add To Cart</Button>
+            <Button variant='contained' key={`add-${el.product_ID}`} color="success" sx={{m:1}} disabled={false} onClick={() => addItemHandler(el)} >Add </Button>
             :
             <Button variant='contained' disabled >SOLD OUT</Button> 
              }
@@ -127,9 +135,24 @@ function Home() {
          }
         
       </div>
-      </div>
-
+      <Box marginBottom={0}>
+        <ReactPaginate 
+        previousLabel={"Prev"}
+        nextLabel={"Next"}
+        pageCount={ Math.ceil(productsAll.length / perPage)}
+        pageRangeDisplayed={1}
+        marginPagesDisplayed={1}
+        onPageChange={changePage}
+        containerClassName={'paginationButtons'}
+        previousLinkClassName='previousBtn'
+        nextLinkClassName='nextBtn'
+        disabledClassName='paginationDisabled'
+        activeClassName='paginationActive'>
+      </ReactPaginate>
+      </Box> 
       <ToastContainer />
+      </div>
+     
       </>
     );
   }
